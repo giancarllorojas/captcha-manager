@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Captcha Harvester</title>
+	<link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
+	<style>
+		body{
+			margin: 0;
+			padding: 0;
+		}
+		section.by-host{
+			box-sizing: border-box;
+			padding: 20px;
+
+			width: 100%;
+
+			float: left;
+		}
+		section.by-host h1{
+			font-family: 'Inconsolata', monospace;
+		}
+		section.by-host ul.captchas{
+			overflow-x: auto;
+			overflow-y: hidden;
+
+			height: 510px;
+
+			white-space: nowrap;
+		}
+		section.by-host ul.captchas li{
+			height: 100%;
+
+			list-style-type: none;
+
+			font-size: 0;
+
+			display: inline-block;
+		}
+		section.by-host ul.captchas li iframe{
+			width: 320px;
+			height: 100%;
+
+			border: none;
+		}
+	</style>
+</head>
+<body>
+	<script>
+		"use strict";
+		/**
+		 * @param {String} host
+		 */
+		function _getSectionElement(host){
+			const elements = document.querySelectorAll('section.by-host');
+			for(let i = 0; i < elements.length; i++){
+				const element = elements[i];
+				if(element.dataset.host === host){
+					return element;
+				}
+			}
+			return undefined;
+		}
+		/**
+		 * @param {String} host
+		 * @param {Number} captchaCallbackIndex
+		 * @param {String} iframeUrl
+		 * @param {Boolean} prioritise
+		 */
+		function addCaptcha(host, captchaCallbackIndex, iframeUrl, prioritise){
+			const captchaElementHTML = '<li data-captcha-callback-index="' + captchaCallbackIndex +'"><iframe src="' + iframeUrl + '"></iframe></li>';
+			const sectionElement = _getSectionElement(host);
+			if(sectionElement === undefined){
+				document.body.innerHTML += '<section class="by-host" data-host="' + host + '"><h1>' + host + '</h1><ul class="captchas">' + captchaElementHTML + '</ul></section>';
+			}else{
+				const captchasElement = sectionElement.getElementsByClassName('captchas')[0];
+				if(prioritise){
+					captchaElement.innerHTML = captchaElementHTML + captchasElement.innerHTML;
+				}else{
+					captchasElement.innerHTML += captchaElementHTML;
+				}
+			}
+		}
+		/**
+		 * @param {Number} captchaCallbackIndex
+		 */
+		function removeCaptcha(captchaCallbackIndex){
+			const elements = document.querySelectorAll('section.by-host ul.captchas li');
+			for(let i = 0; i < elements.length; i++){
+				const element = elements[i];
+				if(parseInt(element.dataset.captchaCallbackIndex) === captchaCallbackIndex){
+					if(element.parentElement.getElementsByTagName('li').length === 1){
+						// remove whole section now
+						element.parentElement.parentElement.outerHTML = '';
+					}else{
+						element.outerHTML = '';
+					}
+					break;
+				}
+			}
+		}
+
+		const ip = '127.0.0.1';
+		const port = 8082;
+
+		const Event = {
+			CaptchaSubmittedEvent: 'CaptchaSubmittedEvent',
+			RemoveCaptchaEvent: 'RemoveCaptchaEvent',
+			AddCaptchaEvent: 'AddCaptchaEvent'
+		};
+
+		const webSocket = new WebSocket('ws://' + ip + ':' + port);
+		webSocket.onmessage = function(event){
+			try{
+				console.log(event.data);
+				const json = JSON.parse(event.data);
+				const data = json.data;
+				switch(json.event){
+					case Event.RemoveCaptchaEvent:
+						removeCaptcha(data.captchaCallbackIndex);
+						break;
+					case Event.AddCaptchaEvent:
+						addCaptcha(data.host, data.captchaCallbackIndex, data.url);
+						break;
+				}
+			}catch(error){
+				console.log('Could not parse WebSocket data: ' + error.message);
+			}
+		};
+		webSocket.onopen = function(){
+			console.log('Connected to ws://' + ip + ':' + port);
+		};
+		webSocket.onclose = function(){
+
+		};
+	</script>
+</body>
+</html>

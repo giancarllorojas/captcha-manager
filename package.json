@@ -1,0 +1,13 @@
+{
+  "name": "captcha-manager",
+  "author": "Sam Mckenzie",
+  "main": "index.js",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "express": "^4.15.5",
+    "net": "^1.0.2",
+    "opn": "^5.1.0",
+    "ws": "^3.2.0"
+  }
+}
