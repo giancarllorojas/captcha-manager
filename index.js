@@ -4,6 +4,6 @@ const Harvester = require('./src/Harvester');
 const Client = null;
 
 module.exports = {
-	Harvester: Harvester,
-	Client: Client
+    Harvester: Harvester,
+    Client: Client
 };
