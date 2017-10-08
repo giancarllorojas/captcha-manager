@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const Harvester = require('./src/Harvester');
 const Client = require('./src/Client');
