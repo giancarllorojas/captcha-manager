@@ -40,6 +40,7 @@ module.exports = class Harvester{
 		this.captchaCallbacks = {};
 		this.captchaCallbackIndex = 0;
 		this.webSocketClients = [];
+		this.sendQueue = [];
 		this.tcpSocketClients = [];
 
 		const app = express();
@@ -135,6 +136,12 @@ module.exports = class Harvester{
 		WebSocketServer.on('connection', (ws, request)=>{
 			console.log(request.connection.remoteAddress + ' has connected to the Web Socket Server');
 			this.webSocketClients.push(ws);
+			if(this.webSocketClients.length === 1){ // first client, send queue messages
+				for(let i = 0; i < this.sendQueue.length; i++){
+					const message = this.sendQueue[i];
+					this._sendWebSocketClients(message.event, message.data);
+				}
+			}
 		});
 		WebSocketServer.on('message', (data)=>{
 			try{
@@ -163,11 +170,15 @@ module.exports = class Harvester{
 	 * @private
 	 */
 	_sendWebSocketClients(event, data){
-		for(let i = 0; i < this.webSocketClients.length; i++){
-			this.webSocketClients[i].send(JSON.stringify({
-				event: event,
-				data: data
-			}));
+		if(this.webSocketClients.length === 0){ // add to queue
+			this.sendQueue.push({event: event, data: data});
+		}else{
+			for(let i = 0; i < this.webSocketClients.length; i++){
+				this.webSocketClients[i].send(JSON.stringify({
+					event: event,
+					data: data
+				}));
+			}
 		}
 	}
 	/**

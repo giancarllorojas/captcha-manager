@@ -12,7 +12,5 @@ async function run(){
 async function run2(){
 	console.log('adidas.co.uk: ' + await harvester.getResponse('adidas.co.uk', '6LdC0iQUAAAAAOYmRv34KSLDe-7DmQrUSYJH8eB_'));
 }
-setTimeout(()=>{
-	run();
-	run2();
-}, 1000);
+run();
+run2();
