@@ -1,9 +1,11 @@
 {
   "name": "captcha-manager",
+  "description": "A Node.js library used for creating and harvesting Google ReCAPTCHA response tokens",
   "author": "Sam Mckenzie",
   "main": "index.js",
   "version": "1.0.0",
-  "description": "",
+  "homepage": "https://www.github.com/samjmckenzie/captcha-manager",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.15.5",
     "net": "^1.0.2",
