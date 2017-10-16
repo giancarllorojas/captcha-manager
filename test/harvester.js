@@ -6,8 +6,6 @@ const Harvester = require('../src/Harvester');
 
 const harvester = new Harvester(8081, 8082, false, true, true);
 
-console.log('\n\n');
-
 // preferred method: using async/await
 async function run(){
     const response = await harvester.getResponse('google.com', '6Le-wvkSAAAAAPBMRTvw0Q4Muexq9bi0DJwx_mJ-');

@@ -11,8 +11,6 @@ const remoteServerPort = 8083;
 new Harvester(8081, 8082, remoteServerPort, true, true);
 const client = new Client('127.0.0.1', remoteServerPort, Secret, true);
 
-console.log('\n\n');
-
 // preferred method: using async/await
 async function run(){
     const response = await client.getResponse('google.com', '6Le-wvkSAAAAAPBMRTvw0Q4Muexq9bi0DJwx_mJ-');
