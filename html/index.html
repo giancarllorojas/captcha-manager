@@ -68,16 +68,18 @@
 		 * @param {Boolean} prioritise
 		 */
 		function addCaptcha(host, captchaCallbackIndex, iframeUrl, prioritise){
-			const captchaElementHTML = '<li data-captcha-callback-index="' + captchaCallbackIndex +'"><iframe src="' + iframeUrl + '"></iframe></li>';
+			const captchaElement = document.createElement('li');
+			captchaElement.dataset.captchaCallbackIndex = captchaCallbackIndex;
+			captchaElement.innerHTML = '<iframe src="' + iframeUrl + '"></iframe>';
 			const sectionElement = _getSectionElement(host);
 			if(sectionElement === undefined){
-				document.body.innerHTML += '<section class="by-host" data-host="' + host + '"><h1>' + host + '</h1><ul class="captchas">' + captchaElementHTML + '</ul></section>';
+				document.body.innerHTML += '<section class="by-host" data-host="' + host + '"><h1>' + host + '</h1><ul class="captchas">' + captchaElement.outerHTML + '</ul></section>';
 			}else{
 				const captchasElement = sectionElement.getElementsByClassName('captchas')[0];
 				if(prioritise){
-					captchaElement.innerHTML = captchaElementHTML + captchasElement.innerHTML;
+					captchasElement.innerHTML = captchaElementHTML + captchasElement.innerHTML;
 				}else{
-					captchasElement.innerHTML += captchaElementHTML;
+					captchasElement.appendChild(captchaElement);
 				}
 			}
 		}
