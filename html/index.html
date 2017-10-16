@@ -46,103 +46,103 @@
 	</style>
 </head>
 <body>
-	<script>
-		"use strict";
-		/**
-		 * @param {String} host
-		 */
-		function _getSectionElement(host){
-			const elements = document.querySelectorAll('section.by-host');
-			for(let i = 0; i < elements.length; i++){
-				const element = elements[i];
-				if(element.dataset.host === host){
-					return element;
-				}
-			}
-			return undefined;
-		}
-		/**
-		 * @param {String} host
-		 * @param {Number} captchaCallbackIndex
-		 * @param {String} iframeUrl
-		 * @param {Boolean} prioritise
-		 */
-		function addCaptcha(host, captchaCallbackIndex, iframeUrl, prioritise){
-		    console.log(prioritise);
-			const captchaElement = document.createElement('li');
-			captchaElement.dataset.captchaCallbackIndex = captchaCallbackIndex;
-			captchaElement.innerHTML = '<iframe src="' + iframeUrl + '"></iframe>';
-			const sectionElement = _getSectionElement(host);
-			if(sectionElement === undefined){
-			    const newSectionElement = document.createElement('section');
-			    newSectionElement.className = 'by-host';
-			    newSectionElement.dataset.host = host;
-			    newSectionElement.innerHTML = '<h1>' + host + '</h1><ul class="captchas">' + captchaElement.outerHTML + '</ul>';
-				document.body.appendChild(newSectionElement);
-			}else{
-				const captchasElement = sectionElement.getElementsByClassName('captchas')[0];
-				if(prioritise){
-					// captchasElement.prependChild(captchaElement); prependChild doesn't exist apparently
-					captchasElement.insertBefore(captchaElement, captchasElement.getElementsByTagName('li')[0]);
-				}else{
-					captchasElement.appendChild(captchaElement);
-				}
-			}
-		}
-		/**
-		 * @param {Number} captchaCallbackIndex
-		 */
-		function removeCaptcha(captchaCallbackIndex){
-			const elements = document.querySelectorAll('section.by-host ul.captchas li');
-			for(let i = 0; i < elements.length; i++){
-				const element = elements[i];
-				if(parseInt(element.dataset.captchaCallbackIndex) === captchaCallbackIndex){
-					if(element.parentElement.getElementsByTagName('li').length === 1){
-						// remove whole section now
-						//      ul            section       body                              ul            section
-						element.parentElement.parentElement.parentElement.removeChild(element.parentElement.parentElement);
-					}else{
-					    //      ul
-						element.parentElement.removeChild(element);
-					}
-					break;
-				}
-			}
-		}
+<script>
+    'use strict';
+    /**
+     * @param {String} host
+     */
+    function _getSectionElement(host){
+        const elements = document.querySelectorAll('section.by-host');
+        for(let i = 0; i < elements.length; i++){
+            const element = elements[i];
+            if(element.dataset.host === host){
+                return element;
+            }
+        }
+        return undefined;
+    }
+    /**
+     * @param {String} host
+     * @param {Number} captchaCallbackIndex
+     * @param {String} iframeUrl
+     * @param {Boolean} prioritise
+     */
+    function addCaptcha(host, captchaCallbackIndex, iframeUrl, prioritise){
+        console.log(prioritise);
+        const captchaElement = document.createElement('li');
+        captchaElement.dataset.captchaCallbackIndex = captchaCallbackIndex;
+        captchaElement.innerHTML = '<iframe src="' + iframeUrl + '"></iframe>';
+        const sectionElement = _getSectionElement(host);
+        if(sectionElement === undefined){
+            const newSectionElement = document.createElement('section');
+            newSectionElement.className = 'by-host';
+            newSectionElement.dataset.host = host;
+            newSectionElement.innerHTML = '<h1>' + host + '</h1><ul class="captchas">' + captchaElement.outerHTML + '</ul>';
+            document.body.appendChild(newSectionElement);
+        }else{
+            const captchasElement = sectionElement.getElementsByClassName('captchas')[0];
+            if(prioritise){
+                // captchasElement.prependChild(captchaElement); prependChild doesn't exist apparently
+                captchasElement.insertBefore(captchaElement, captchasElement.getElementsByTagName('li')[0]);
+            }else{
+                captchasElement.appendChild(captchaElement);
+            }
+        }
+    }
+    /**
+     * @param {Number} captchaCallbackIndex
+     */
+    function removeCaptcha(captchaCallbackIndex){
+        const elements = document.querySelectorAll('section.by-host ul.captchas li');
+        for(let i = 0; i < elements.length; i++){
+            const element = elements[i];
+            if(parseInt(element.dataset.captchaCallbackIndex) === captchaCallbackIndex){
+                if(element.parentElement.getElementsByTagName('li').length === 1){
+                    // remove whole section now
+                    //      ul            section       body                              ul            section
+                    element.parentElement.parentElement.parentElement.removeChild(element.parentElement.parentElement);
+                }else{
+                    //      ul
+                    element.parentElement.removeChild(element);
+                }
+                break;
+            }
+        }
+    }
 
-		const ip = '127.0.0.1';
-		const port = 8082;
+    const ip = '127.0.0.1';
+    const port = 8082;
 
-		const Event = {
-			CaptchaSubmittedEvent: 'CaptchaSubmittedEvent',
-			RemoveCaptchaEvent: 'RemoveCaptchaEvent',
-			AddCaptchaEvent: 'AddCaptchaEvent'
-		};
+    const Event = {
+        CaptchaSubmittedEvent: 'CaptchaSubmittedEvent',
+        RemoveCaptchaEvent: 'RemoveCaptchaEvent',
+        AddCaptchaEvent: 'AddCaptchaEvent'
+    };
 
-		const webSocket = new WebSocket('ws://' + ip + ':' + port);
-		webSocket.onmessage = function(event){
-			try{
-				console.log(event.data);
-				const json = JSON.parse(event.data);
-				const data = json.data;
-				switch(json.event){
-					case Event.RemoveCaptchaEvent:
-						removeCaptcha(data.captchaCallbackIndex);
-						break;
-					case Event.AddCaptchaEvent:
-						addCaptcha(data.host, data.captchaCallbackIndex, data.url, data.prioritise);
-						break;
-				}
-			}catch(error){
-				console.log('Could not parse WebSocket data: ' + error.message);
-			}
-		};
-		webSocket.onopen = function(){
-			console.log('Connected to ws://' + ip + ':' + port);
-		};
-		webSocket.onclose = function(){
+    const webSocket = new WebSocket('ws://' + ip + ':' + port);
+    webSocket.onmessage = function(event){
+        try{
+            console.log(event.data);
+            const json = JSON.parse(event.data);
+            const data = json.data;
+            switch(json.event){
+                case Event.RemoveCaptchaEvent:
+                    removeCaptcha(data.captchaCallbackIndex);
+                    break;
+                case Event.AddCaptchaEvent:
+                    addCaptcha(data.host, data.captchaCallbackIndex, data.url, data.prioritise);
+                    break;
+            }
+        }catch(error){
+            console.log('Could not parse WebSocket data: ' + error.message);
+        }
+    };
+    webSocket.onopen = function(){
+        console.log('Connected to ws://' + ip + ':' + port);
+    };
+    webSocket.onclose = function(){
 
-		};
-	</script>
+    };
+</script>
 </body>
 </html>
