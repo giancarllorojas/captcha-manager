@@ -40,16 +40,18 @@ module.exports = class Harvester{
         this.httpPort = httpPort;
         this.captchaCallbacks = {};
         this.captchaCallbackIndex = 0;
+
+        this.webSocketServer = null;
         this.webSocketClients = [];
         this.sendQueue = [];
+
+        this.tcpServer = null;
         this.tcpSocketClients = [];
 
         this.openBrowser = openBrowser;
         this.firstCaptchaRequested = false;
-        this.httpPort = httpPort;
 
         const app = express();
-        this.app = app;
         app.use(express.static(__dirname + '/../html'));
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({
@@ -89,7 +91,7 @@ module.exports = class Harvester{
         app.listen(httpPort);
 
         if(Number.isInteger(remoteServerPort)){
-            const server = net.createServer((socket)=>{
+            this.tcpServer = net.createServer((socket)=>{
                 socket.authenticated = false;
                 socket.key = socket.remoteAddress + ':' + socket.remotePort;
                 socket.id = this.tcpSocketClients.length;
@@ -156,13 +158,13 @@ module.exports = class Harvester{
                     }while(endIndex > 0);
                 });
             });
-            server.listen(remoteServerPort);
+            this.tcpServer.listen(remoteServerPort);
         }
 
-        const WebSocketServer = new WebSocket.Server({
+        this.webSocketServer = new WebSocket.Server({
             port: webSocketPort
         });
-        WebSocketServer.on('connection', (ws, request) =>{
+        this.webSocketServer.on('connection', (ws, request) =>{
             console.log(request.connection.remoteAddress + ' has connected to the Web Socket Server');
             this.webSocketClients.push(ws);
             if(this.webSocketClients.length === 1){ // first client, send queue messages
@@ -172,7 +174,7 @@ module.exports = class Harvester{
                 }
             }
         });
-        WebSocketServer.on('message', (data) =>{
+        this.webSocketServer.on('message', (data) =>{
             try{
                 const json = JSON.parse(data);
                 const data = json.data;
@@ -249,7 +251,7 @@ module.exports = class Harvester{
     /**
      * Stop the Harvester
      */
-    stop(){
-        this.app.close();
-    }
+    /*stop(){
+        //this.tcpServer.destroy();
+    }*/
 };
