@@ -53,14 +53,26 @@ module.exports = class Harvester{
         app.get('/captcha/:captchaCallbackIndex/:siteKey',
             (request, response) =>{
                 const {captchaCallbackIndex, siteKey} = request.params;
-                response.send('<html><head><title>reCAPTCHA</title><script src="https://www.google.com/recaptcha/api.js" async defer></script></head><body><form action="/captcha" method="POST"><input type="hidden" name="captchaCallbackIndex" value="' +
-                    captchaCallbackIndex +
-                    '" /><div class="g-recaptcha" data-sitekey="' + siteKey +
-                    '"></div><br/><input type="submit" value="Submit"></form></body></html>');
+                response.send('' +
+                    '<html>' +
+                    '   <head>' +
+                    '       <title>reCAPTCHA</title>' +
+                    '       <script src="https://www.google.com/recaptcha/api.js" async defer></script>' +
+                    '   </head>' +
+                    '   <body>' +
+                    '       <form action="/captcha" method="POST">' +
+                    '       <input type="hidden" name="captchaCallbackIndex" value="' + captchaCallbackIndex + '" />' +
+                    '       <div class="g-recaptcha" data-sitekey="' + siteKey + '">' +
+                    '       </div>' +
+                    '       <br/>' +
+                    '       <input type="submit" value="Submit">' +
+                    '       </form>' +
+                    '   </body>' +
+                    '</html>'
+                );
             });
         app.post('/captcha', (request, response) =>{
-            const captchaCallbackIndex = parseInt(
-                request.body['captchaCallbackIndex']);
+            const captchaCallbackIndex = parseInt(request.body['captchaCallbackIndex']);
             const captchaCallback = this.captchaCallbacks[captchaCallbackIndex];
             captchaCallback(request.body['g-recaptcha-response']);
             delete this.captchaCallbacks[captchaCallbackIndex];
@@ -80,40 +92,35 @@ module.exports = class Harvester{
                 console.log(socket.key + ' has connected to the TCP server');
                 setTimeout(() =>{
                     if(!socket.authenticated){
-                        this._sendSocket(socket,
-                            Event.TCP.ClientAuthenticatedEvent, {
-                                authenticated: false,
-                                message: 'Not authenticated in time'
-                            });
+                        this._sendSocket(socket, Event.TCP.ClientAuthenticatedEvent, {
+                            authenticated: false,
+                            message: 'Not authenticated in time'
+                        });
                         this.tcpSocketClients.splice(socket.id, 1);
                     }
                 }, 3000);
-                const onEvent = async(event, data) =>{
+                const onEvent = async(event, data)=>{
                     switch(event){
                         case Event.TCP.ClientAuthenticateEvent:
                             if(data.secret === Secret){
                                 socket.authenticated = true;
-                                this._sendSocket(socket,
-                                    Event.TCP.ClientAuthenticatedEvent, {
-                                        authenticated: true,
-                                        message: 'Successfully authenticated'
-                                    });
+                                this._sendSocket(socket, Event.TCP.ClientAuthenticatedEvent, {
+                                    authenticated: true,
+                                    message: 'Successfully authenticated'
+                                });
                             }else{
-                                this._sendSocket(socket,
-                                    Event.TCP.ClientAuthenticatedEvent, {
-                                        authenticated: false,
-                                        message: 'Wrong secret'
-                                    });
+                                this._sendSocket(socket, Event.TCP.ClientAuthenticatedEvent, {
+                                    authenticated: false,
+                                    message: 'Wrong secret'
+                                });
                             }
                             break;
                         case Event.TCP.CaptchaRequestEvent:
-                            const response = await this.getResponse(data.host,
-                                data.siteKey, data.prioritise);
-                            this._sendSocket(socket,
-                                Event.TCP.CaptchaResponseEvent, {
-                                    captchaCallbackIndex: data.captchaCallbackIndex,
-                                    response: response
-                                });
+                            const response = await this.getResponse(data.host, data.siteKey, data.prioritise);
+                            this._sendSocket(socket, Event.TCP.CaptchaResponseEvent, {
+                                captchaCallbackIndex: data.captchaCallbackIndex,
+                                response: response
+                            });
                             break;
                     }
                 };
@@ -129,11 +136,9 @@ module.exports = class Harvester{
                             const json = JSON.parse(jsonString);
                             onEvent(json.event, json.data);
                         }catch(error){
-                            console.log('Could not parse JSON on TCP server: ' +
-                                error.message);
+                            console.log('Could not parse JSON on TCP server: ' + error.message);
                         }
-                        const newString = bufferString.slice(endIndex +
-                            endIdentifier.length);
+                        const newString = bufferString.slice(endIndex + endIdentifier.length);
                         buffers = [new Buffer(newString)];
                         endIndex = newString.indexOf(endIdentifier);
                         bufferString = newString;
@@ -147,8 +152,7 @@ module.exports = class Harvester{
             port: webSocketPort
         });
         WebSocketServer.on('connection', (ws, request) =>{
-            console.log(request.connection.remoteAddress +
-                ' has connected to the Web Socket Server');
+            console.log(request.connection.remoteAddress + ' has connected to the Web Socket Server');
             this.webSocketClients.push(ws);
             if(this.webSocketClients.length === 1){ // first client, send queue messages
                 for(let i = 0; i < this.sendQueue.length; i++){
@@ -221,8 +225,7 @@ module.exports = class Harvester{
         }
         this._sendWebSocketClients(Event.WebSocket.AddCaptchaEvent, {
             captchaCallbackIndex: this.captchaCallbackIndex,
-            url: 'http://localapi.' + host + ':' + this.httpPort + '/captcha/' +
-            this.captchaCallbackIndex + '/' + siteKey,
+            url: 'http://localapi.' + host + ':' + this.httpPort + '/captcha/' + this.captchaCallbackIndex + '/' + siteKey,
             host: host,
             prioritise: prioritise
         });

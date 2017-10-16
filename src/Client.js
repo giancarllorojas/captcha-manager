@@ -15,12 +15,12 @@ module.exports = class Client{
         this.captchaCallbacks = {};
         this.authenticated = false;
         this.sendQueue = [];
-        this.socket = net.createConnection(port, address, () =>{
+        this.socket = net.createConnection(port, address, ()=>{
             this._send(Event.TCP.ClientAuthenticateEvent, {
                 secret: secret
             });
         });
-        const onEvent = (event, data) =>{
+        const onEvent = (event, data)=>{
             switch(event){
                 case Event.TCP.ClientAuthenticatedEvent:
                     console.log('Authentication response: ' + data.message);
@@ -33,14 +33,13 @@ module.exports = class Client{
                     }
                     break;
                 case Event.TCP.CaptchaResponseEvent:
-                    this.captchaCallbacks[data.captchaCallbackIndex](
-                        data.response);
+                    this.captchaCallbacks[data.captchaCallbackIndex](data.response);
                     break;
             }
         };
         const endIdentifier = '\n\r\n\r';
         let buffers = [];
-        this.socket.on('data', (buffer) =>{
+        this.socket.on('data', (buffer)=>{
             buffers.push(buffer);
             let bufferString = Buffer.concat(buffers).toString();
             let endIndex = bufferString.indexOf(endIdentifier);
@@ -53,8 +52,7 @@ module.exports = class Client{
                     console.log('Could not parse JSON from TCP server: ' +
                         error.message);
                 }
-                const newString = bufferString.slice(endIndex +
-                    endIdentifier.length);
+                const newString = bufferString.slice(endIndex + endIdentifier.length);
                 buffers = [new Buffer(newString)];
                 endIndex = newString.indexOf(endIdentifier);
                 bufferString = newString;
@@ -69,8 +67,7 @@ module.exports = class Client{
      */
     _send(event, data){
         if(this.authenticated){
-            this.socket.write(JSON.stringify({event: event, data: data}) +
-                '\n\r\n\r');
+            this.socket.write(JSON.stringify({event: event, data: data}) + '\n\r\n\r');
         }else{
             this.sendQueue.push({event: event, data: data});
         }
