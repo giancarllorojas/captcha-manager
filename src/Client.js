@@ -9,8 +9,15 @@ module.exports = class Client{
      * @param {String} address
      * @param {Number} port
      * @param {String} secret
+     * @param {Boolean|undefined} debug
      */
-    constructor(address, port, secret){
+    constructor(address, port, secret, debug){
+        if(debug === undefined){
+            debug = false;
+        }
+
+        this.debug = debug;
+
         this.captchaCallbackIndex = 0;
         this.captchaCallbacks = {};
         this.authenticated = false;
@@ -23,7 +30,9 @@ module.exports = class Client{
         const onEvent = (event, data)=>{
             switch(event){
                 case Event.TCP.ClientAuthenticatedEvent:
-                    console.log('Authentication response: ' + data.message);
+                    if(debug){
+                        console.log('Authentication response: ' + data.message);
+                    }
                     this.authenticated = data.authenticated;
                     if(data.authenticated){
                         for(let i = 0; i < this.sendQueue.length; i++){
