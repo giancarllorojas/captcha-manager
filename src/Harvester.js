@@ -15,10 +15,11 @@ module.exports = class Harvester{
      * Initialise CaptchaHarvester (start HTTP server)
      * @param {Number} httpPort
      * @param {Number} webSocketPort
-     * @param {Boolean} remoteServerPort
-     * @param {Boolean} openBrowser
+     * @param {Boolean|undefined} remoteServerPort
+     * @param {Boolean|undefined} openBrowser
+     * @param {Boolean|undefined} debug
      */
-    constructor(httpPort, webSocketPort, remoteServerPort, openBrowser){
+    constructor(httpPort, webSocketPort, remoteServerPort, openBrowser, debug){
         if(httpPort === undefined){
             httpPort = 8081;
         }
@@ -35,6 +36,9 @@ module.exports = class Harvester{
         }
         if(openBrowser === undefined){
             openBrowser = true;
+        }
+        if(debug === undefined){
+            debug = false;
         }
 
         this.httpPort = httpPort;
@@ -139,7 +143,7 @@ module.exports = class Harvester{
                 };
                 const endIdentifier = '\n\r\n\r';
                 let buffers = [];
-                socket.on('data', (buffer) =>{
+                socket.on('data', (buffer)=>{
                     buffers.push(buffer);
                     let bufferString = Buffer.concat(buffers).toString();
                     let endIndex = bufferString.indexOf(endIdentifier);
@@ -164,7 +168,7 @@ module.exports = class Harvester{
         this.webSocketServer = new WebSocket.Server({
             port: webSocketPort
         });
-        this.webSocketServer.on('connection', (ws, request) =>{
+        this.webSocketServer.on('connection', (ws, request)=>{
             console.log(request.connection.remoteAddress + ' has connected to the Web Socket Server');
             this.webSocketClients.push(ws);
             if(this.webSocketClients.length === 1){ // first client, send queue messages
