@@ -18,7 +18,7 @@ module.exports = class Client{
         this.socket = net.createConnection(port, address, ()=>{
             this._send(Event.TCP.ClientAuthenticateEvent, {
                 secret: secret
-            });
+            }, true);
         });
         const onEvent = (event, data)=>{
             switch(event){
@@ -62,10 +62,14 @@ module.exports = class Client{
      * Send data to the TCP server
      * @param {String} event
      * @param {Object} data
+     * @param {Boolean|undefined} isAuthData
      * @private
      */
-    _send(event, data){
-        if(this.authenticated){
+    _send(event, data, isAuthData){
+        if(isAuthData === undefined){
+            isAuthData = false;
+        }
+        if(this.authenticated || isAuthData){
             this.socket.write(JSON.stringify({event: event, data: data}) + '\n\r\n\r');
         }else{
             this.sendQueue.push({event: event, data: data});
