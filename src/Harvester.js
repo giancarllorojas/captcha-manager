@@ -45,6 +45,7 @@ module.exports = class Harvester{
         this.tcpSocketClients = [];
 
         const app = express();
+        this.app = app;
         app.use(express.static(__dirname + '/../html'));
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({
@@ -232,5 +233,11 @@ module.exports = class Harvester{
         return new Promise((resolve) =>{
             this.captchaCallbacks[this.captchaCallbackIndex++] = resolve;
         });
+    }
+    /**
+     * Stop the Harvester
+     */
+    stop(){
+        this.app.close();
     }
 };

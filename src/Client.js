@@ -49,8 +49,7 @@ module.exports = class Client{
                     const json = JSON.parse(jsonString);
                     onEvent(json.event, json.data);
                 }catch(error){
-                    console.log('Could not parse JSON from TCP server: ' +
-                        error.message);
+                    console.log('Could not parse JSON from TCP server: ' + error.message);
                 }
                 const newString = bufferString.slice(endIndex + endIdentifier.length);
                 buffers = [new Buffer(newString)];
@@ -92,5 +91,11 @@ module.exports = class Client{
         return new Promise((resolve) =>{
             this.captchaCallbacks[this.captchaCallbackIndex++] = resolve;
         });
+    }
+    /**
+     * Stop the Client
+     */
+    stop(){
+        this.socket.destroy();
     }
 };
