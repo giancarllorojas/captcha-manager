@@ -41,6 +41,8 @@ module.exports = class Harvester{
             debug = false;
         }
 
+        this.debug = debug;
+
         this.httpPort = httpPort;
         this.captchaCallbacks = {};
         this.captchaCallbackIndex = 0;
@@ -100,7 +102,9 @@ module.exports = class Harvester{
                 socket.key = socket.remoteAddress + ':' + socket.remotePort;
                 socket.id = this.tcpSocketClients.length;
                 this.tcpSocketClients.push(socket);
-                console.log(socket.key + ' has connected to the TCP server');
+                if(debug){
+                    console.log(socket.key + ' has connected to the TCP server');
+                }
                 setTimeout(()=>{
                     if(!socket.authenticated){
                         this._sendSocket(socket, Event.TCP.ClientAuthenticatedEvent, {
@@ -169,7 +173,9 @@ module.exports = class Harvester{
             port: webSocketPort
         });
         this.webSocketServer.on('connection', (ws, request)=>{
-            console.log(request.connection.remoteAddress + ' has connected to the Web Socket Server');
+            if(debug){
+                console.log(request.connection.remoteAddress + ' has connected to the Web Socket Server');
+            }
             this.webSocketClients.push(ws);
             if(this.webSocketClients.length === 1){ // first client, send queue messages
                 for(let i = 0; i < this.sendQueue.length; i++){
