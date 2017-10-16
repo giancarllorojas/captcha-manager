@@ -68,16 +68,22 @@
 		 * @param {Boolean} prioritise
 		 */
 		function addCaptcha(host, captchaCallbackIndex, iframeUrl, prioritise){
+		    console.log(prioritise);
 			const captchaElement = document.createElement('li');
 			captchaElement.dataset.captchaCallbackIndex = captchaCallbackIndex;
 			captchaElement.innerHTML = '<iframe src="' + iframeUrl + '"></iframe>';
 			const sectionElement = _getSectionElement(host);
 			if(sectionElement === undefined){
-				document.body.innerHTML += '<section class="by-host" data-host="' + host + '"><h1>' + host + '</h1><ul class="captchas">' + captchaElement.outerHTML + '</ul></section>';
+			    const newSectionElement = document.createElement('section');
+			    newSectionElement.className = 'by-host';
+			    newSectionElement.dataset.host = host;
+			    newSectionElement.innerHTML = '<h1>' + host + '</h1><ul class="captchas">' + captchaElement.outerHTML + '</ul>';
+				document.body.appendChild(newSectionElement);
 			}else{
 				const captchasElement = sectionElement.getElementsByClassName('captchas')[0];
 				if(prioritise){
-					captchasElement.prependChild(captchaElement);
+					// captchasElement.prependChild(captchaElement); prependChild doesn't exist apparently
+					captchasElement.insertBefore(captchaElement, captchasElement.getElementsByTagName('li')[0]);
 				}else{
 					captchasElement.appendChild(captchaElement);
 				}
@@ -93,9 +99,11 @@
 				if(parseInt(element.dataset.captchaCallbackIndex) === captchaCallbackIndex){
 					if(element.parentElement.getElementsByTagName('li').length === 1){
 						// remove whole section now
-						element.parentElement.parentElement.outerHTML = '';
+						//      ul            section       body                              ul            section
+						element.parentElement.parentElement.parentElement.removeChild(element.parentElement.parentElement);
 					}else{
-						element.outerHTML = '';
+					    //      ul
+						element.parentElement.removeChild(element);
 					}
 					break;
 				}
@@ -122,7 +130,7 @@
 						removeCaptcha(data.captchaCallbackIndex);
 						break;
 					case Event.AddCaptchaEvent:
-						addCaptcha(data.host, data.captchaCallbackIndex, data.url);
+						addCaptcha(data.host, data.captchaCallbackIndex, data.url, data.prioritise);
 						break;
 				}
 			}catch(error){
