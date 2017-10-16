@@ -1,0 +1,6 @@
+/src/.secret
+/package-lock.json
+/.idea
+/.gitignore
+/.npmignore
+/test
