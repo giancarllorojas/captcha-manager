@@ -77,7 +77,7 @@
 			}else{
 				const captchasElement = sectionElement.getElementsByClassName('captchas')[0];
 				if(prioritise){
-					captchasElement.innerHTML = captchaElementHTML + captchasElement.innerHTML;
+					captchasElement.prependChild(captchaElement);
 				}else{
 					captchasElement.appendChild(captchaElement);
 				}
