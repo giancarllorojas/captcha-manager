@@ -44,6 +44,10 @@ module.exports = class Harvester{
         this.sendQueue = [];
         this.tcpSocketClients = [];
 
+        this.openBrowser = openBrowser;
+        this.firstCaptchaRequested = false;
+        this.httpPort = httpPort;
+
         const app = express();
         this.app = app;
         app.use(express.static(__dirname + '/../html'));
@@ -85,13 +89,13 @@ module.exports = class Harvester{
         app.listen(httpPort);
 
         if(Number.isInteger(remoteServerPort)){
-            const server = net.createServer((socket) =>{
+            const server = net.createServer((socket)=>{
                 socket.authenticated = false;
                 socket.key = socket.remoteAddress + ':' + socket.remotePort;
                 socket.id = this.tcpSocketClients.length;
                 this.tcpSocketClients.push(socket);
                 console.log(socket.key + ' has connected to the TCP server');
-                setTimeout(() =>{
+                setTimeout(()=>{
                     if(!socket.authenticated){
                         this._sendSocket(socket, Event.TCP.ClientAuthenticatedEvent, {
                             authenticated: false,
@@ -122,6 +126,12 @@ module.exports = class Harvester{
                                 captchaCallbackIndex: data.captchaCallbackIndex,
                                 response: response
                             });
+                            if(!this.firstCaptchaRequested){
+                                if(openBrowser){
+                                    opn('http://127.0.0.1:' + httpPort);
+                                }
+                                this.firstCaptchaRequested = true;
+                            }
                             break;
                     }
                 };
@@ -177,10 +187,6 @@ module.exports = class Harvester{
                 console.log('Could not parse WebSocket data: ' + error.message);
             }
         });
-
-        if(openBrowser){
-            opn('http://127.0.0.1:' + httpPort);
-        }
     }
     /**
      * Broadcast data to all WebSocket clients
@@ -223,6 +229,12 @@ module.exports = class Harvester{
     getResponse(host, siteKey, prioritise){
         if(prioritise === undefined){
             prioritise = false;
+        }
+        if(!this.firstCaptchaRequested){
+            if(this.openBrowser){
+                opn('http://127.0.0.1:' + this.httpPort);
+            }
+            this.firstCaptchaRequested = true;
         }
         this._sendWebSocketClients(Event.WebSocket.AddCaptchaEvent, {
             captchaCallbackIndex: this.captchaCallbackIndex,
