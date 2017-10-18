@@ -19,28 +19,10 @@ module.exports = class Harvester{
      * @param {Boolean|undefined} openBrowser
      * @param {Boolean|undefined} debug
      */
-    constructor(httpPort, webSocketPort, remoteServerPort, openBrowser, debug){
-        if(httpPort === undefined){
-            httpPort = 8081;
+    constructor(httpPort = 8081, webSocketPort = 8082, remoteServerPort = undefined, openBrowser = true, debug = false){
+        if(Number.isInteger(remoteServerPort)){
+            remoteServerPort = remoteServerPort;
         }
-        if(webSocketPort === undefined){
-            webSocketPort = 8082;
-        }
-        if(remoteServerPort === undefined || remoteServerPort === false ||
-            remoteServerPort === null){
-            remoteServerPort = false;
-        }else{
-            if(!Number.isInteger(remoteServerPort)){
-                remoteServerPort = 8083;
-            }
-        }
-        if(openBrowser === undefined){
-            openBrowser = true;
-        }
-        if(debug === undefined){
-            debug = false;
-        }
-
         this.debug = debug;
 
         this.httpPort = httpPort;
@@ -238,10 +220,7 @@ module.exports = class Harvester{
      * @param {Boolean|undefined} prioritise
      * @returns {Promise}
      */
-    getResponse(host, siteKey, prioritise){
-        if(prioritise === undefined){
-            prioritise = false;
-        }
+    getResponse(host, siteKey, prioritise = false){
         if(!this.firstCaptchaRequested){
             if(this.openBrowser){
                 opn('http://127.0.0.1:' + this.httpPort);

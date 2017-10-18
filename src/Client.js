@@ -11,11 +11,7 @@ module.exports = class Client{
      * @param {String} secret
      * @param {Boolean|undefined} debug
      */
-    constructor(address, port, secret, debug){
-        if(debug === undefined){
-            debug = false;
-        }
-
+    constructor(address, port, secret, debug = undefined){
         this.debug = debug;
 
         this.captchaCallbackIndex = 0;
@@ -74,10 +70,7 @@ module.exports = class Client{
      * @param {Boolean|undefined} isAuthData
      * @private
      */
-    _send(event, data, isAuthData){
-        if(isAuthData === undefined){
-            isAuthData = false;
-        }
+    _send(event, data, isAuthData = undefined){
         if(this.authenticated || isAuthData){
             this.socket.write(JSON.stringify({event: event, data: data}) + '\n\r\n\r');
         }else{
@@ -91,10 +84,7 @@ module.exports = class Client{
      * @param {Boolean|undefined} prioritise
      * @returns {Promise}
      */
-    getResponse(host, siteKey, prioritise){
-        if(prioritise === undefined){
-            prioritise = false;
-        }
+    getResponse(host, siteKey, prioritise = false){
         this._send(Event.TCP.CaptchaRequestEvent, {
             captchaCallbackIndex: this.captchaCallbackIndex,
             host: host,
