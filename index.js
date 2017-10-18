@@ -1,7 +1,7 @@
 'use strict';
 
 const Harvester = require('./src/Harvester');
-const Client = null;
+const Client = require('./src/Client');
 
 module.exports = {
     Harvester: Harvester,
