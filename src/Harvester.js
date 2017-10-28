@@ -13,8 +13,8 @@ const Event = Constants.Event;
 module.exports = class Harvester{
     /**
      * Initialise CaptchaHarvester (start HTTP server)
-     * @param {Number} httpPort
-     * @param {Number} webSocketPort
+     * @param {Number|undefined} httpPort
+     * @param {Number|undefined} webSocketPort
      * @param {Boolean|undefined} remoteServerPort
      * @param {Boolean|undefined} openBrowser
      * @param {Boolean|undefined} debug

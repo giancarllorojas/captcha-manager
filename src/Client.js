@@ -11,7 +11,7 @@ module.exports = class Client{
      * @param {String} secret
      * @param {Boolean|undefined} debug
      */
-    constructor(address, port, secret, debug = undefined){
+    constructor(address, port, secret, debug = false){
         this.debug = debug;
 
         this.captchaCallbackIndex = 0;
