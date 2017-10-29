@@ -1,6 +1,8 @@
 # captcha-manager
 A Node.js module used for creating and harvesting Google ReCAPTCHA response tokens
 
+[Video demo](https://youtu.be/V3cwTC_b0UQ)
+
 # Install
 1. Change directory to your Node.js project in terminal
 2. Run `npm install captcha-manager --save`
