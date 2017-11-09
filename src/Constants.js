@@ -5,7 +5,8 @@ module.exports = {
         WebSocket: {
             CaptchaSubmittedEvent: 'CaptchaSubmittedEvent',
             RemoveCaptchaEvent: 'RemoveCaptchaEvent',
-            AddCaptchaEvent: 'AddCaptchaEvent'
+            AddCaptchaEvent: 'AddCaptchaEvent',
+            SetBrowserDisplayedCaptchasLimit: 'SetBrowserDisplayedCaptchasLimit'
         },
         TCP: {
             ClientAuthenticateEvent: 'ClientAuthenticateEvent',

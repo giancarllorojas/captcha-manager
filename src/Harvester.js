@@ -230,8 +230,17 @@ module.exports = class Harvester{
             host: host,
             prioritise: prioritise
         });
-        return new Promise((resolve) =>{
+        return new Promise((resolve)=>{
             this.captchaCallbacks[this.captchaCallbackIndex++] = resolve;
+        });
+    }
+    /**
+     * Set the maximum amount of captchas that can be displayed at once in the browser
+     * @param limit
+     */
+    setBrowserDisplayedCaptchasLimit(limit = 30){
+        this._sendWebSocketClients(Event.WebSocket.SetBrowserDisplayedCaptchasLimit, {
+            limit: limit
         });
     }
     /**

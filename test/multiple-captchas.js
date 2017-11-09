@@ -19,8 +19,9 @@ async function run3(){
     const response = await harvester.getResponse('supremenewyork.com', '6LeWwRkUAAAAAOBsau7KpuC9AV-6J8mhw4AjC3Xz');
     console.log('supremenewyork.com: ' + response);
 }
-for(let i = 0; i < 2; i++){
+for(let i = 0; i < 10; i++){
     run();
-    run2();
+}
+for(let i = 0; i < 2; i++){
     run3();
 }

@@ -48,6 +48,11 @@
 <body>
 <script>
     'use strict';
+
+    let displayCaptchasLimit = 30;
+    let displayedCaptchasCount = 0;
+    const captchasQueue = [];
+
     /**
      * @param {String} host
      */
@@ -68,25 +73,39 @@
      * @param {Boolean} prioritise
      */
     function addCaptcha(host, captchaCallbackIndex, iframeUrl, prioritise){
-        console.log(prioritise);
-        const captchaElement = document.createElement('li');
-        captchaElement.dataset.captchaCallbackIndex = captchaCallbackIndex;
-        captchaElement.innerHTML = '<iframe src="' + iframeUrl + '"></iframe>';
-        const sectionElement = _getSectionElement(host);
-        if(sectionElement === undefined){
-            const newSectionElement = document.createElement('section');
-            newSectionElement.className = 'by-host';
-            newSectionElement.dataset.host = host;
-            newSectionElement.innerHTML = '<h1>' + host + '</h1><ul class="captchas">' + captchaElement.outerHTML + '</ul>';
-            document.body.appendChild(newSectionElement);
-        }else{
-            const captchasElement = sectionElement.getElementsByClassName('captchas')[0];
-            if(prioritise){
-                // captchasElement.prependChild(captchaElement); prependChild doesn't exist apparently
-                captchasElement.insertBefore(captchaElement, captchasElement.getElementsByTagName('li')[0]);
+        if(displayedCaptchasCount < displayCaptchasLimit){
+            displayedCaptchasCount++;
+            const captchaElement = document.createElement('li');
+            captchaElement.dataset.captchaCallbackIndex = captchaCallbackIndex;
+            captchaElement.innerHTML = '<iframe src="' + iframeUrl + '"></iframe>';
+            const sectionElement = _getSectionElement(host);
+            if(sectionElement === undefined){
+                const newSectionElement = document.createElement('section');
+                newSectionElement.className = 'by-host';
+                newSectionElement.dataset.host = host;
+                newSectionElement.innerHTML = '<h1>' + host + '</h1><ul class="captchas">' + captchaElement.outerHTML + '</ul>';
+                document.body.appendChild(newSectionElement);
             }else{
-                captchasElement.appendChild(captchaElement);
+                const captchasElement = sectionElement.getElementsByClassName('captchas')[0];
+                if(prioritise){
+                    // captchasElement.prependChild(captchaElement); prependChild doesn't exist apparently
+                    captchasElement.insertBefore(captchaElement, captchasElement.getElementsByTagName('li')[0]);
+                }else{
+                    captchasElement.appendChild(captchaElement);
+                }
             }
+        }else{
+            const captchaQueueData = {
+                host: host,
+	            captchaCallbackIndex: captchaCallbackIndex,
+	            iframeUrl: iframeUrl,
+	            prioritise: prioritise
+            };
+			if(prioritise){
+			    captchasQueue.unshift(captchaQueueData);
+			}else{
+			    captchasQueue.push(captchaQueueData);
+			}
         }
     }
     /**
@@ -94,6 +113,12 @@
      */
     function removeCaptcha(captchaCallbackIndex){
         const elements = document.querySelectorAll('section.by-host ul.captchas li');
+        if(--displayedCaptchasCount < displayCaptchasLimit){
+            const captchaQueueData = captchasQueue.shift();
+            if(captchaQueueData !== undefined){
+                addCaptcha(captchaQueueData.host, captchaQueueData.captchaCallbackIndex, captchaQueueData.iframeUrl, captchaQueueData.prioritise);
+            }
+        }
         for(let i = 0; i < elements.length; i++){
             const element = elements[i];
             if(parseInt(element.dataset.captchaCallbackIndex) === captchaCallbackIndex){
@@ -116,7 +141,8 @@
     const Event = {
         CaptchaSubmittedEvent: 'CaptchaSubmittedEvent',
         RemoveCaptchaEvent: 'RemoveCaptchaEvent',
-        AddCaptchaEvent: 'AddCaptchaEvent'
+        AddCaptchaEvent: 'AddCaptchaEvent',
+        SetBrowserDisplayedCaptchasLimit: 'SetBrowserDisplayedCaptchasLimit'
     };
 
     const webSocket = new WebSocket('ws://' + ip + ':' + port);
@@ -132,6 +158,9 @@
                 case Event.AddCaptchaEvent:
                     addCaptcha(data.host, data.captchaCallbackIndex, data.url, data.prioritise);
                     break;
+	            case Event.SetBrowserDisplayedCaptchasLimit:
+	                displayCaptchasLimit = data.limit;
+	                break;
             }
         }catch(error){
             console.log('Could not parse WebSocket data: ' + error.message);
