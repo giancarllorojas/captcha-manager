@@ -20,9 +20,6 @@ module.exports = class Harvester{
      * @param {Boolean|undefined} debug
      */
     constructor(httpPort = 8081, webSocketPort = 8082, remoteServerPort = undefined, openBrowser = true, debug = false){
-        if(Number.isInteger(remoteServerPort)){
-            remoteServerPort = remoteServerPort;
-        }
         this.debug = debug;
 
         this.httpPort = httpPort;
